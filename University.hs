@@ -1,10 +1,10 @@
-import Data.Time.Clock
+import Data.Time.Clock 
 import Data.List
 import System.IO
 import Control.Exception
 import Control.DeepSeq (deepseq)
 import System.Directory (doesFileExist)
-import Data.Maybe (isNothing)  -- Añade esta línea
+import Data.Maybe (isNothing, mapMaybe)  -- Añade esta línea
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.Clock (UTCTime, NominalDiffTime)
 
@@ -79,19 +79,21 @@ cargarUniversidad = do
     existe <- doesFileExist "University.txt"
     if existe
         then do
-            contenido <- withFile "University.txt" ReadMode $ \h -> do -- Abrimos en modo lectura
-                contenido <- hGetContents h -- Leemos el contenido del archivo
-                contenido `deepseq` return contenido -- Forzamos evaluación completa del contenido
-            let lineas = lines contenido -- Dividimos el contenido en líneas
-            if null lineas -- Si no hay lineas
-                then return [] -- Devolvemos lista vacía
-                else return (map leerEstudiante lineas) -- Devolvemos lista de estudiantes convirtiendo casa linea en un estudiante
+            contenido <- withFile "University.txt" ReadMode $ \h -> do
+                contenido <- hGetContents h
+                contenido `deepseq` return contenido
+            let lineas = lines contenido
+                estudiantes = mapMaybe leerEstudianteSafe lineas
+            return estudiantes
         else do
             putStrLn "El archivo University.txt no existe. Se creará uno nuevo."
-            return [] -- Devolvemos lista vacía
-    where
-        leerEstudiante linea = read linea :: Estudiante -- Convierte una línea en un estudiante
-
+            return []
+  where
+    leerEstudianteSafe :: String -> Maybe Estudiante
+    leerEstudianteSafe linea =
+      case reads linea :: [(Estudiante, String)] of
+        [(e, "")] -> Just e
+        _         -> Nothing
 -- Función para mostrar la información de un estudiante como cadena de texto
 mostrarEstudiante :: Estudiante -> String 
 -- Muestra la información de un estudiante en formato de cadena de texto
@@ -114,7 +116,7 @@ mostrarInfoEstudiante estudiante tiempoActual =
     "ID: " ++ idEstudiante estudiante ++ 
     ", Nombre: " ++ nombreEstudiante estudiante ++ 
     ", Entrada: " ++ formatearFechaHora  (entrada estudiante) ++ 
-    ", Salida: " ++ maybe "Aún en la universidad" show (salida estudiante) ++
+    ", Salida: " ++ maybe "Aún en la universidad" formatearFechaHora (salida estudiante) ++
     ", Tiempo: " ++ formatearTiempo (tiempoEnUniversidad estudiante tiempoActual)
 
 -- Función principal del programa
