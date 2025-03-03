@@ -6,6 +6,9 @@ Este repositorio contiene un sistema funcional desarrollado en el lenguage de pr
 - Isabella Cadavid Posada
 - Wendy Vanessa Atehortua Chaverra
 
+## Video sustentación del programa
+https://youtu.be/Xp2b2bIjw8k?feature=shared
+
 ## Entorno de desarrollo usado para el desarrollo del proyecto
 El proyecto fue desarrollado utilizando Visual Studio Code con la extensión para Haskell.
 
